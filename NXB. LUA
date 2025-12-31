@@ -1,0 +1,220 @@
+--// SERVICES
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
+
+local player = Players.LocalPlayer
+
+--// UI LIB
+local Library = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/x2zu/OPEN-SOURCE-UI-ROBLOX/refs/heads/main/X2ZU%20UI%20ROBLOX%20OPEN%20SOURCE/DummyUi-leak-by-x2zu/fetching-main/Tools/Framework.luau"
+))()
+
+--// WINDOW
+local Window = Library:Window({
+    Title = "NXB HUB",
+    Desc = "by MATTHEW",
+    Icon = 105059922903197,
+    Theme = "Dark",
+    Config = {
+        Keybind = Enum.KeyCode.LeftControl,
+        Size = UDim2.new(0, 520, 0, 420)
+    },
+    CloseUIButton = {
+        Enabled = true,
+        Text = "NXB"
+    }
+})
+
+--// STATES
+local autoFarmKmActive = false
+local duplicateCoinActive = false
+local duplicateCashActive = false
+local visualCashActive = false
+local antiKickActive = false
+
+local antiKickConnection = nil
+
+--// AUTO FARM KM
+local function autoFarmKm(state)
+    autoFarmKmActive = state
+    if state then
+        task.spawn(function()
+            while autoFarmKmActive and player.Character do
+                pcall(function()
+                    local hum = player.Character:FindFirstChild("Humanoid")
+                    if hum and hum.SeatPart then
+                        local car = hum.SeatPart.Parent
+                        if car:FindFirstChild("Body") and car.Body:FindFirstChild("#Weight") then
+                            car.PrimaryPart = car.Body["#Weight"]
+                        end
+
+                        local loc1 = Vector3.new(-6205.2983, 100, 8219.8535)
+                        local loc2 = Vector3.new(-7594.5410, 100, 5130.9526)
+
+                        repeat
+                            task.wait()
+                            if car.PrimaryPart then
+                                car.PrimaryPart.Velocity = car.PrimaryPart.CFrame.LookVector * 550
+                                car:PivotTo(CFrame.new(car.PrimaryPart.Position, loc1))
+                            end
+                        until not autoFarmKmActive or not player.Character.PrimaryPart or (player.Character.PrimaryPart.Position - loc1).Magnitude < 50
+
+                        if car.PrimaryPart then car.PrimaryPart.Velocity = Vector3.zero end
+
+                        repeat
+                            task.wait()
+                            if car.PrimaryPart then
+                                car.PrimaryPart.Velocity = car.PrimaryPart.CFrame.LookVector * 550
+                                car:PivotTo(CFrame.new(car.PrimaryPart.Position, loc2))
+                            end
+                        until not autoFarmKmActive or not player.Character.PrimaryPart or (player.Character.PrimaryPart.Position - loc2).Magnitude < 50
+
+                        if car.PrimaryPart then car.PrimaryPart.Velocity = Vector3.zero end
+                    end
+                end)
+                task.wait(0.1)
+            end
+        end)
+    end
+end
+
+--// MANUAL COIN
+local function duplicateCoin(state)
+    duplicateCoinActive = state
+    local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+    local RecieveCoin = Remotes:WaitForChild("RecieveCoin")
+    local Jeepnies = Workspace:WaitForChild("Jeepnies")
+
+    if state then
+        task.spawn(function()
+            while duplicateCoinActive do
+                pcall(function()
+                    local Jeep = Jeepnies:FindFirstChild(player.Name)
+                    if Jeep then
+                        local PV = Jeep:FindFirstChild("PassengerValues")
+                        if PV then
+                            RecieveCoin:FireServer({
+                                PassengerValues = PV,
+                                Password = 123456789,
+                                Main = true,
+                                Value = 300
+                            })
+                        end
+                    end
+                end)
+                task.wait(0.1)
+            end
+        end)
+    end
+end
+
+--// MANUAL CASH
+local function duplicateCash(state)
+    duplicateCashActive = state
+    local RecieveCash = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("RecieveCash")
+
+    if state then
+        task.spawn(function()
+            while duplicateCashActive do
+                for i = 1, 500 do
+                    pcall(function()
+                        RecieveCash:FireServer({
+                            Value = 100,
+                            Password = 93828272827
+                        })
+                    end)
+                end
+                task.wait(0.3)
+            end
+        end)
+    end
+end
+
+--// VISUAL CASH
+local function visualCash(state)
+    visualCashActive = state
+    if state then
+        task.spawn(function()
+            while visualCashActive do
+                pcall(function()
+                    local ls = player:FindFirstChild("leaderstats")
+                    if ls then
+                        local cash = ls:FindFirstChild("Cash") or ls:FindFirstChild("Coins") or ls:FindFirstChild("Money")
+                        if cash and (cash:IsA("NumberValue") or cash:IsA("IntValue")) then
+                            cash.Value = cash.Value + 1000 -- visual increment
+                        end
+                    end
+                end)
+                task.wait(0.1)
+            end
+        end)
+    end
+end
+
+--// ANTI-KICK / ANTI-AFK
+local function setAntiKick(state)
+    antiKickActive = state
+    if antiKickConnection then
+        antiKickConnection:Disconnect()
+        antiKickConnection = nil
+    end
+
+    if state then
+        antiKickConnection = player.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+    end
+end
+
+--// UI: Farming Tab
+local TabFarm = Window:Tab({Title = "Farming", Icon = "truck"})
+TabFarm:Section({Title = "Auto Drive"})
+TabFarm:Toggle({
+    Title = "Auto Farm KM",
+    Value = false,
+    Callback = function(v)
+        autoFarmKm(v)
+    end
+})
+
+--// UI: Coins Tab
+local TabCoins = Window:Tab({Title = "Coins", Icon = "coins"})
+TabCoins:Section({Title = "Manual Methods"})
+TabCoins:Toggle({
+    Title = "Manual Coin",
+    Value = false,
+    Callback = function(v)
+        duplicateCoin(v)
+    end
+})
+TabCoins:Toggle({
+    Title = "Manual Cash",
+    Value = false,
+    Callback = function(v)
+        duplicateCash(v)
+    end
+})
+
+--// UI: Others Tab
+local TabOthers = Window:Tab({Title = "Others", Icon = "settings"})
+TabOthers:Section({Title = "Safe Features"})
+TabOthers:Toggle({
+    Title = "Visual Cash",
+    Desc = "Client-side only",
+    Value = false,
+    Callback = function(v)
+        visualCash(v)
+    end
+})
+TabOthers:Toggle({
+    Title = "Anti-Kick",
+    Desc = "Prevents AFK kick",
+    Value = false,
+    Callback = function(v)
+        setAntiKick(v)
+    end
+})
